@@ -15,6 +15,7 @@ awscli = "*"
 boto3 = "*"
 trino = "*"
 pandas = "*"
+pyarrow = "*"
 python-dotenv = "*"
 
 [requires]
