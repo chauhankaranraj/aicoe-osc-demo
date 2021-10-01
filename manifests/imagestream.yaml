@@ -1,12 +1,25 @@
 kind: ImageStream
 apiVersion: image.openshift.io/v1
 metadata:
-  name: <CHANGE_ME>
+  name: aicoe-osc-demo
+  labels:
+    opendatahub.io/notebook-image: "true"
+  annotations:
+    opendatahub.io/notebook-image-url:
+      "https://github.com/os-climate/aicoe-osc-demo"
+    opendatahub.io/notebook-image-name:
+      "AICoE OS-Climate Demo"
+    opendatahub.io/notebook-image-desc:
+      "Jupyter notebooks for the Nimbus and the Cirrus demos for OS-Climate"
 spec:
   lookupPolicy:
     local: true
   tags:
-    - name: latest
+    - name: "v.10"
       from:
         kind: DockerImage
-        name: <QUAY_IMAGE_URL>
+        name: quay.io/os-climate/aicoe-osc-demo:v.10
+      annotations:
+        openshift.io/imported-from: quay.io/os-climate/aicoe-osc-demo
+      importPolicy:
+        scheduled: true
