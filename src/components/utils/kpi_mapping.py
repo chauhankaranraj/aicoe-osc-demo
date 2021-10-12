@@ -1,7 +1,7 @@
 import pandas as pd
 from src.components.config import config
 
-df = pd.read_csv(config.ROOT / "data/kpi_mapping.csv", header=0)
+df = pd.read_csv('https://raw.githubusercontent.com/chauhankaranraj/aicoe-osc-demo/839d7db5fed7f4e3aa4edf2da199b418f1f29355/data/kpi_mapping/ESG/kpi_mapping.csv', header=0)
 _KPI_MAPPING = {str(i[0]): i[1] for i in df[["kpi_id", "question"]].values}
 KPI_MAPPING = {(float(key)): value for key, value in _KPI_MAPPING.items()}
 
