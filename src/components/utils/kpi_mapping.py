@@ -1,5 +1,5 @@
 import pandas as pd
-from src.components import config
+from src.components.config import config
 
 df = pd.read_csv(config.ROOT / "data/kpi_mapping.csv", header=0)
 _KPI_MAPPING = {str(i[0]): i[1] for i in df[["kpi_id", "question"]].values}
