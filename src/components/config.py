@@ -1,4 +1,6 @@
 import os
+
+from torch.cuda import is_available
 import src
 import pathlib
 import torch
@@ -25,11 +27,11 @@ BASE_CURATION_FOLDER = DATA_FOLDER / "curation"
 # if not os.path.exists(BASE_CURATION_FOLDER):
 #     os.mkdir(BASE_CURATION_FOLDER)
 
-ckpt = "icdar_19b2_v2.pth" #if "cpu" in torch.__version__ else "icdar_19b2.pth"
+ckpt = "icdar_19b2_v2.pth" if not torch.cuda.is_available() else "icdar_19b2.pth"
 config_file = (
     "cascade_mask_rcnn_hrnetv2p_w32_20e_coco.py"
-    # if "cpu" in torch.__version__
-    # else "cascade_mask_rcnn_hrnetv2p_w32_20e.py"
+    if not torch.cuda.is_available()
+    else "cascade_mask_rcnn_hrnetv2p_w32_20e.py"
 )
 PDFTableExtractor_kwargs = {
     "batch_size": -1,
