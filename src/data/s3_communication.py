@@ -34,10 +34,10 @@ class S3Communication(object):
         )
         self.bucket = s3_bucket
 
-    def _upload_bytes(self, buffer, prefix, key):
+    def _upload_bytes(self, buffer_bytes, prefix, key):
         """Upload byte content in buffer to bucket."""
         s3_object = self.s3_resource.Object(self.bucket, f"{prefix}/{key}")
-        status = s3_object.put(Body=buffer.getvalue())
+        status = s3_object.put(Body=buffer_bytes)
         return status
 
     def _download_bytes(self, prefix, key):
@@ -45,12 +45,12 @@ class S3Communication(object):
         buffer = BytesIO()
         s3_object = self.s3_resource.Object(self.bucket, f"{prefix}/{key}")
         s3_object.download_fileobj(buffer)
-        return buffer
+        return buffer.getvalue()
 
     def upload_file_to_s3(self, filepath, s3_prefix, s3_key):
         """Read file from disk and upload to s3 bucket under prefix/key."""
         with open(filepath, "rb") as f:
-            status = self._upload_bytes(f, s3_prefix, s3_key)
+            status = self._upload_bytes(f.read(), s3_prefix, s3_key)
         return status
 
     def upload_df_to_s3(self, df, s3_prefix, s3_key, filetype=S3FileType.PARQUET):
@@ -70,20 +70,21 @@ class S3Communication(object):
                 f"Received unexpected file type arg {filetype}. Can only be one of: {list(S3FileType)})"
             )
 
-        status = self._upload_bytes(buffer, s3_prefix, s3_key)
+        status = self._upload_bytes(buffer.getvalue(), s3_prefix, s3_key)
         return status
 
     def download_file_from_s3(self, filepath, s3_prefix, s3_key):
         """Download file from s3 bucket/prefix/key and save it to filepath on disk."""
-        buffer = self._download_bytes(s3_prefix, s3_key)
+        buffer_bytes = self._download_bytes(s3_prefix, s3_key)
         with open(filepath, "wb") as f:
-            f.write(buffer)
+            f.write(buffer_bytes)
 
     def download_df_from_s3(self, s3_prefix, s3_key, filetype=S3FileType.PARQUET):
         """
         Helper function to read from s3 and see if the saved data is correct.
         """
-        buffer = self._download_bytes(s3_prefix, s3_key)
+        buffer_bytes = self._download_bytes(s3_prefix, s3_key)
+        buffer = BytesIO(buffer_bytes)
 
         if filetype == S3FileType.CSV:
             df = pd.read_csv(buffer)
