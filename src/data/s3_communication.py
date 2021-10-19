@@ -1,4 +1,6 @@
 """S3 communication tools."""
+import os
+import os.path as osp
 import boto3
 import pandas as pd
 from enum import Enum
@@ -36,14 +38,14 @@ class S3Communication(object):
 
     def _upload_bytes(self, buffer_bytes, prefix, key):
         """Upload byte content in buffer to bucket."""
-        s3_object = self.s3_resource.Object(self.bucket, f"{prefix}/{key}")
+        s3_object = self.s3_resource.Object(self.bucket, osp.join(prefix, key))
         status = s3_object.put(Body=buffer_bytes)
         return status
 
     def _download_bytes(self, prefix, key):
         """Download byte content in bucket/prefix/key to buffer."""
         buffer = BytesIO()
-        s3_object = self.s3_resource.Object(self.bucket, f"{prefix}/{key}")
+        s3_object = self.s3_resource.Object(self.bucket, osp.join(prefix, key))
         s3_object.download_fileobj(buffer)
         return buffer.getvalue()
 
@@ -52,6 +54,29 @@ class S3Communication(object):
         with open(filepath, "rb") as f:
             status = self._upload_bytes(f.read(), s3_prefix, s3_key)
         return status
+
+    def download_files_in_prefix_to_dir(self, s3_prefix, destination_dir):
+        """
+        Download all files under a prefix to a directory.
+        
+        Modified from original code here: https://stackoverflow.com/a/33350380
+        """
+        paginator = self.s3_resource.meta.client.get_paginator('list_objects')
+        for result in paginator.paginate(Bucket=self.bucket, Delimiter='/', Prefix=s3_prefix):
+            # download all files in the sub "directory", if any
+            if result.get('CommonPrefixes') is not None:
+                for subdir in result.get('CommonPrefixes'):
+                    self.download_files_in_prefix_to_dir(
+                        subdir.get('Prefix'),
+                        destination_dir,
+                    )
+            # download files at the root of this prefix
+            for file in result.get('Contents', []):
+                dest_filename = osp.basename(file.get('Key'))
+                dest_pathname = osp.join(destination_dir, dest_filename)
+                if not osp.exists(osp.dirname(dest_pathname)):
+                    os.makedirs(osp.dirname(dest_pathname))
+                self.download_file_from_s3(dest_pathname, s3_prefix, dest_filename)
 
     def upload_df_to_s3(self, df, s3_prefix, s3_key, filetype=S3FileType.PARQUET):
         """
