@@ -1,5 +1,6 @@
 """S3 communication tools."""
 import os
+import pathlib
 import os.path as osp
 import boto3
 import pandas as pd
@@ -50,10 +51,73 @@ class S3Communication(object):
         return buffer.getvalue()
 
     def upload_file_to_s3(self, filepath, s3_prefix, s3_key):
-        """Read file from disk and upload to s3 bucket under prefix/key."""
+        """Read file from disk and upload to s3 bucket/prefix/key."""
         with open(filepath, "rb") as f:
             status = self._upload_bytes(f.read(), s3_prefix, s3_key)
         return status
+
+    def download_file_from_s3(self, filepath, s3_prefix, s3_key):
+        """Download file from s3 bucket/prefix/key and save it to filepath on disk."""
+        buffer_bytes = self._download_bytes(s3_prefix, s3_key)
+        with open(filepath, "wb") as f:
+            f.write(buffer_bytes)
+
+    def upload_df_to_s3(self, df, s3_prefix, s3_key, filetype=S3FileType.PARQUET):
+        """
+        This helper function takes as input the data frame to be uploaded, and the output s3_key.
+        It then saves the data frame in the defined s3 bucket.
+        """
+        buffer = BytesIO()
+        if filetype == S3FileType.CSV:
+            df.to_csv(buffer)
+        elif filetype == S3FileType.JSON:
+            df.to_json(buffer)
+        elif filetype == S3FileType.PARQUET:
+            df.to_parquet(buffer)
+        else:
+            raise ValueError(
+                f"Received unexpected file type arg {filetype}. Can only be one of: {list(S3FileType)})"
+            )
+
+        status = self._upload_bytes(buffer.getvalue(), s3_prefix, s3_key)
+        return status
+
+    def download_df_from_s3(self, s3_prefix, s3_key, filetype=S3FileType.PARQUET):
+        """
+        Helper function to read from s3 and see if the saved data is correct.
+        """
+        buffer_bytes = self._download_bytes(s3_prefix, s3_key)
+        buffer = BytesIO(buffer_bytes)
+
+        if filetype == S3FileType.CSV:
+            df = pd.read_csv(buffer)
+        elif filetype == S3FileType.JSON:
+            df = pd.read_json(buffer)
+        elif filetype == S3FileType.PARQUET:
+            df = pd.read_parquet(buffer)
+        else:
+            raise ValueError(
+                f"Received unexpected file type arg {filetype}. Can only be one of: {list(S3FileType)})"
+            )
+        return df
+
+    def upload_files_in_dir_to_prefix(self, source_dir, s3_prefix):
+        """
+        Upload all files in a directory to under the s3 prefix, recursively.
+        
+        Modified from original code here: https://stackoverflow.com/a/33350380
+        """
+        # convert to pathlib path
+        source_dir_pl = pathlib.Path(source_dir)
+
+        # get all files and directories EXCEPT hidden ones
+        upload_files_paths = list(source_dir_pl.rglob("[!.]*"))
+        for fpath in upload_files_paths:
+            self.upload_file_to_s3(
+                fpath,
+                s3_prefix,
+                fpath.name
+            )
 
     def download_files_in_prefix_to_dir(self, s3_prefix, destination_dir):
         """
@@ -77,48 +141,3 @@ class S3Communication(object):
                 if not osp.exists(osp.dirname(dest_pathname)):
                     os.makedirs(osp.dirname(dest_pathname))
                 self.download_file_from_s3(dest_pathname, s3_prefix, dest_filename)
-
-    def upload_df_to_s3(self, df, s3_prefix, s3_key, filetype=S3FileType.PARQUET):
-        """
-        This helper function takes as input the data frame to be uploaded, and the output s3_key.
-        It then saves the data frame in the defined s3 bucket.
-        """
-        buffer = BytesIO()
-        if filetype == S3FileType.CSV:
-            df.to_csv(buffer)
-        elif filetype == S3FileType.JSON:
-            df.to_json(buffer)
-        elif filetype == S3FileType.PARQUET:
-            df.to_parquet(buffer)
-        else:
-            raise ValueError(
-                f"Received unexpected file type arg {filetype}. Can only be one of: {list(S3FileType)})"
-            )
-
-        status = self._upload_bytes(buffer.getvalue(), s3_prefix, s3_key)
-        return status
-
-    def download_file_from_s3(self, filepath, s3_prefix, s3_key):
-        """Download file from s3 bucket/prefix/key and save it to filepath on disk."""
-        buffer_bytes = self._download_bytes(s3_prefix, s3_key)
-        with open(filepath, "wb") as f:
-            f.write(buffer_bytes)
-
-    def download_df_from_s3(self, s3_prefix, s3_key, filetype=S3FileType.PARQUET):
-        """
-        Helper function to read from s3 and see if the saved data is correct.
-        """
-        buffer_bytes = self._download_bytes(s3_prefix, s3_key)
-        buffer = BytesIO(buffer_bytes)
-
-        if filetype == S3FileType.CSV:
-            df = pd.read_csv(buffer)
-        elif filetype == S3FileType.JSON:
-            df = pd.read_json(buffer)
-        elif filetype == S3FileType.PARQUET:
-            df = pd.read_parquet(buffer)
-        else:
-            raise ValueError(
-                f"Received unexpected file type arg {filetype}. Can only be one of: {list(S3FileType)})"
-            )
-        return df
