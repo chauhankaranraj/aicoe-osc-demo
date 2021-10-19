@@ -19,6 +19,7 @@ class S3FileType(Enum):
 class S3Communication(object):
     """
     Class to establish communication with a ceph s3 bucket.
+
     It connects with the bucket and provides methods to read and write data in the parquet format.
     """
 
@@ -64,8 +65,9 @@ class S3Communication(object):
 
     def upload_df_to_s3(self, df, s3_prefix, s3_key, filetype=S3FileType.PARQUET):
         """
-        This helper function takes as input the data frame to be uploaded, and the output s3_key.
-        It then saves the data frame in the defined s3 bucket.
+        Take as input the data frame to be uploaded, and the output s3_key.
+
+        Then save the data frame in the defined s3 bucket.
         """
         buffer = BytesIO()
         if filetype == S3FileType.CSV:
@@ -83,9 +85,7 @@ class S3Communication(object):
         return status
 
     def download_df_from_s3(self, s3_prefix, s3_key, filetype=S3FileType.PARQUET):
-        """
-        Helper function to read from s3 and see if the saved data is correct.
-        """
+        """Read from s3 and see if the saved data is correct."""
         buffer_bytes = self._download_bytes(s3_prefix, s3_key)
         buffer = BytesIO(buffer_bytes)
 
@@ -104,8 +104,8 @@ class S3Communication(object):
     def upload_files_in_dir_to_prefix(self, source_dir, s3_prefix):
         """
         Upload all files in a directory to under the s3 prefix, recursively.
-        
-        Modified from original code here: https://stackoverflow.com/a/33350380
+
+        Excludes hidden files and directories by default.
         """
         # convert to pathlib path
         source_dir_pl = pathlib.Path(source_dir)
@@ -113,30 +113,28 @@ class S3Communication(object):
         # get all files and directories EXCEPT hidden ones
         upload_files_paths = list(source_dir_pl.rglob("[!.]*"))
         for fpath in upload_files_paths:
-            self.upload_file_to_s3(
-                fpath,
-                s3_prefix,
-                fpath.name
-            )
+            self.upload_file_to_s3(fpath, s3_prefix, fpath.name)
 
     def download_files_in_prefix_to_dir(self, s3_prefix, destination_dir):
         """
         Download all files under a prefix to a directory.
-        
+
         Modified from original code here: https://stackoverflow.com/a/33350380
         """
-        paginator = self.s3_resource.meta.client.get_paginator('list_objects')
-        for result in paginator.paginate(Bucket=self.bucket, Delimiter='/', Prefix=s3_prefix):
+        paginator = self.s3_resource.meta.client.get_paginator("list_objects")
+        for result in paginator.paginate(
+            Bucket=self.bucket, Delimiter="/", Prefix=s3_prefix
+        ):
             # download all files in the sub "directory", if any
-            if result.get('CommonPrefixes') is not None:
-                for subdir in result.get('CommonPrefixes'):
+            if result.get("CommonPrefixes") is not None:
+                for subdir in result.get("CommonPrefixes"):
                     self.download_files_in_prefix_to_dir(
-                        subdir.get('Prefix'),
+                        subdir.get("Prefix"),
                         destination_dir,
                     )
             # download files at the root of this prefix
-            for file in result.get('Contents', []):
-                dest_filename = osp.basename(file.get('Key'))
+            for file in result.get("Contents", []):
+                dest_filename = osp.basename(file.get("Key"))
                 dest_pathname = osp.join(destination_dir, dest_filename)
                 if not osp.exists(osp.dirname(dest_pathname)):
                     os.makedirs(osp.dirname(dest_pathname))
