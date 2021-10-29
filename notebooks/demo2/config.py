@@ -8,7 +8,7 @@ STAGE = "extract"  # "extract" | "curate "
 SEED = 42
 
 # ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
-ROOT =  pathlib.Path("opt/app-root")
+ROOT =  pathlib.Path("/opt/app-root")
 CONFIG_FOLDER = ROOT
 CHECKPOINT_FOLDER = ROOT / "models"
 DATA_FOLDER = ROOT / "data"
