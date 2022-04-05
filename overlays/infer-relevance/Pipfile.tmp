@@ -10,11 +10,8 @@ Sphinx = "*"
 jupyterlab = "*"
 
 [packages]
-src = {editable = true, path = "./"}
-awscli = "*"
+src = {path = "../.."}
 boto3 = "*"
-xlrd = "*"
-trino = "*"
 pandas = "*"
 pyarrow = "*"
 python-dotenv = "*"
@@ -35,10 +32,6 @@ tqdm = "*"
 farm = "==0.5.0"
 optuna = "*"
 Flask = "==1.1.4"
-pyspellchecker = "*"
-spacy = "*"
-ipywidgets = "*"
-jupyterlab_widgets = "*"
 
 [requires]
 python_version = "3.8"
