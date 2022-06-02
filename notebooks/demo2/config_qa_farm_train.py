@@ -36,7 +36,7 @@ class QAFileConfig(QAConfig):
         super().__init__(project_name)
         self.data_dir = os.path.join(self.root, "data")
         self.curated_data = os.path.join(
-            self.data_dir, "training", project_name, "kpi_train.json"
+            self.data_dir, "squad", project_name, "kpi_train.json"
         )
         # If True, curated data will be split by dev_split ratio to train and val and saved in train_filename,
         # dev_filename . Otherwise train and val data will be loaded from mentioned filenames.
@@ -44,10 +44,10 @@ class QAFileConfig(QAConfig):
         self.seed = 42
         self.dev_split = 0.2
         self.train_filename = os.path.join(
-            self.data_dir, "training", project_name, "kpi_train_split.json"
+            self.data_dir, "squad", project_name, "kpi_train_split.json"
         )
         self.dev_filename = os.path.join(
-            self.data_dir, "training", project_name, "kpi_val_split.json"
+            self.data_dir, "squad", project_name, "kpi_val_split.json"
         )
         self.test_filename = None
         self.saved_models_dir = os.path.join(self.root, "models", "KPI_EXTRACTION")
@@ -60,13 +60,13 @@ class QAFileConfig(QAConfig):
         # self.dev_filename = os.path.join(self.data_dir, f"dev_split_{os.path.basename(self.curated_data)}")
         self.data_dir = os.path.join(self.root, "data")
         self.curated_data = os.path.join(
-            self.data_dir, "training", project_name, "kpi_train.json"
+            self.data_dir, "squad", project_name, "kpi_train.json"
         )
         self.train_filename = os.path.join(
-            self.data_dir, "training", project_name, "kpi_train_split.json"
+            self.data_dir, "squad", project_name, "kpi_train_split.json"
         )
         self.dev_filename = os.path.join(
-            self.data_dir, "training", project_name, "kpi_val_split.json"
+            self.data_dir, "squad", project_name, "kpi_val_split.json"
         )
 
 
@@ -125,7 +125,7 @@ class QATrainingConfig(QAConfig):
         self.use_amp = True
         self.distributed = False
         self.learning_rate = 2e-5
-        self.n_epochs = 5
+        self.n_epochs = 1
         self.evaluate_every = 50
         self.dropout = 0.1
         self.batch_size = 4
@@ -165,7 +165,7 @@ class QAInferConfig(QAConfig):
 
         # Parameters for text inference
         self.load_dir = {"Text": os.path.join(self.root, "models", "KPI_EXTRACTION")}
-        self.batch_size = 16
+        self.batch_size = 4 # 16
         self.gpu = True
         # Set to value 1 (or 0) to disable multiprocessing. Set to None to let Inferencer use all CPU cores minus one.
         self.num_processes = None
