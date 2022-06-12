@@ -36,7 +36,7 @@ class QAFileConfig(QAConfig):
         super().__init__(project_name)
         self.data_dir = os.path.join(self.root, "data")
         self.curated_data = os.path.join(
-            self.data_dir, "squad", project_name, "kpi_train.json"
+            self.data_dir, "squad", "kpi_train.json"
         )
         # If True, curated data will be split by dev_split ratio to train and val and saved in train_filename,
         # dev_filename . Otherwise train and val data will be loaded from mentioned filenames.
@@ -51,6 +51,16 @@ class QAFileConfig(QAConfig):
         )
         self.test_filename = None
         self.saved_models_dir = os.path.join(self.root, "models", "KPI_EXTRACTION")
+        self.dev_predictions_filename = os.path.join(
+            self.root,
+            "reports",
+            "qa_predictions.json",
+        )
+        self.model_performance_metrics_filename = os.path.join(
+            self.root,
+            "reports",
+            "qa_model_perf_metrics.csv",
+        )
 
     def update_paths(self, data_dir, curated_data):
         """Update paths."""
