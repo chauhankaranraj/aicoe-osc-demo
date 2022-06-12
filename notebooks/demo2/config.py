@@ -110,7 +110,7 @@ class CurateConfig:
 # Text KPI Inference Curator
 TextKPIInferenceCurator_kwargs = {
     "annotation_folder": BASE_ANNOTATION_FOLDER,
-    "agg_annotation": DATA_FOLDER
+    "agg_annotation": BASE_ANNOTATION_FOLDER
     / "20201030 1Qbit aggregated_annotations_needs_correction.xlsx",
     "extracted_text_json_folder": BASE_EXTRACTION_FOLDER,
     "output_squad_folder": DATA_FOLDER / "squad",
