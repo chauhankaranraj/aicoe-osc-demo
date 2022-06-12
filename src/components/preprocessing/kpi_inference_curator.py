@@ -75,9 +75,10 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
             df = clean_annotation(df, self.agg_annotation, kpi_category=self.kpi_mapping_category["KPI_CATEGORY"])[COL_ORDER]
         else:
             #df = pd.read_csv(self.agg_annotation, header=0, index_col=0)[COL_ORDER]
-            input_fd = open(self.agg_annotation, errors = 'ignore')
-            df = pd.read_csv(input_fd, header=0, index_col=0)[COL_ORDER]
-            input_fd.close()
+            # input_fd = open(self.agg_annotation, errors = 'ignore')
+            # df = pd.read_csv(input_fd, header=0, index_col=0)[COL_ORDER]
+            # input_fd.close()
+            df = pd.read_excel(self.agg_annotation, header=0, index_col=0)[COL_ORDER]
             df.loc[:, 'source_page'] = df['source_page'].apply(ast.literal_eval)
 
         return df
