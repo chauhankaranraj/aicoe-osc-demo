@@ -44,10 +44,10 @@ class QAFileConfig(QAConfig):
         self.seed = 42
         self.dev_split = 0.2
         self.train_filename = os.path.join(
-            self.data_dir, "squad", project_name, "kpi_train_split.json"
+            self.data_dir, "squad", "kpi_train_split.json"
         )
         self.dev_filename = os.path.join(
-            self.data_dir, "squad", project_name, "kpi_val_split.json"
+            self.data_dir, "squad", "kpi_val_split.json"
         )
         self.test_filename = None
         self.saved_models_dir = os.path.join(self.root, "models", "KPI_EXTRACTION")
@@ -70,13 +70,13 @@ class QAFileConfig(QAConfig):
         # self.dev_filename = os.path.join(self.data_dir, f"dev_split_{os.path.basename(self.curated_data)}")
         self.data_dir = os.path.join(self.root, "data")
         self.curated_data = os.path.join(
-            self.data_dir, "squad", project_name, "kpi_train.json"
+            self.data_dir, "squad", "kpi_train.json"
         )
         self.train_filename = os.path.join(
-            self.data_dir, "squad", project_name, "kpi_train_split.json"
+            self.data_dir, "squad", "kpi_train_split.json"
         )
         self.dev_filename = os.path.join(
-            self.data_dir, "squad", project_name, "kpi_val_split.json"
+            self.data_dir, "squad", "kpi_val_split.json"
         )
 
 
